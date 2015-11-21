@@ -7,7 +7,7 @@ module.exports = function(grunt) {
             options: {
                 dir: 'VLC', // Output dir
                 force: true, // Overwrite 
-                arch: 'ia32', // ia32 / x64 
+                arch: 'x64', // ia32 / x64 
                 platform: 'win' // win / osx / linux
             }
         }

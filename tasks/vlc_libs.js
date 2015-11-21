@@ -19,8 +19,10 @@ function getPlatformInfo() {
 }
 
 function getVLC(platform, arch, dir, callback) {
-    utils.getJson(('https://api.github.com/repos/Magics-Group/vlc-prebuilt/releases/latest')
+
+    utils.getJson('https://api.github.com/repos/Magics-Group/vlc-prebuilt/releases/latest')
         .then(function(json) {
+
             if (json.message === 'Not Found') {
                 console.log('No VLC Download Found');
                 return callback();
@@ -32,15 +34,13 @@ function getVLC(platform, arch, dir, callback) {
                 arch: arch
             };
 
-
             _.forEach(json.assets, function(asset) {
-                var assetParsed = path.parse(asset.name).name.split('_');
-                console.log(assetParsed);
+                var assetParsed = path.parse(asset.name).name.split('-');
                 var assetObject = {
-                    arch: assetParsed[3],
-                    platform: assetParsed[4]
+                    platform: assetParsed[1],
+                    arch: assetParsed[2].split('.')[0]
                 };
-                if (_.isEqual(runtime, assetRuntime))
+                if (_.isEqual(assetObject, LookingObject))
                     candidate = asset;
             });
 
@@ -49,38 +49,43 @@ function getVLC(platform, arch, dir, callback) {
                 return callback();
             }
 
-            console.log('Acquiring: ', candidate.name);
+            console.log('Acquiring:', candidate.name);
 
-            downloader.downloadAndUnpack(dir, candidate.browser_download_url).then(function() {
-                return callback();
-            });
+            downloader.downloadAndUnpack(dir, candidate.browser_download_url)
+                .then(function() {
+                    return callback();
+                });
+
         })
         .catch(function(e) {
             console.log('Error:', e);
-            return callback()
-        })
-    }
+            return callback();
+        });
 
-    module.exports = function(grunt) {
 
-        grunt.registerTask('vlc_libs', 'Download VLC libs', downloadTask);
+}
 
-        function downloadTask() {
-            var done = this.async();
-            var params = this.options({
-                dir: 'VLC',
-                force: false,
-                arch: getPlatformInfo().split(':')[1],
-                platform: getPlatformInfo().split(':')[0]
+module.exports = function(grunt) {
+
+    grunt.registerTask('vlc_libs', 'Download VLC libs', downloadTask);
+
+    function downloadTask() {
+        var done = this.async();
+
+        var params = this.options({
+            dir: 'VLC',
+            force: false,
+            arch: getPlatformInfo().split(':')[1],
+            platform: getPlatformInfo().split(':')[0]
+        });
+
+        if (params.force)
+            rimraf(params.dir, function() {
+                getVLC(params.platform, params.arch, params.dir, done);
             });
-
-            if (params.force)
-                rimraf(params.dir, function() {
-                    getWCJS(params.platform, params.arch, params.dir, done);
-                });
-            else {
-                getWCJS(params.platform, params.arch, params.dir, done);
-            }
-
+        else {
+            getVLC(params.platform, params.arch, params.dir, done);
         }
-    };
+
+    }
+};
