@@ -1,6 +1,7 @@
 # grunt-vlc-libs
 Grunt task to download VLC Libs for WebChimera.js
 
+[![npm version](https://badge.fury.io/js/grunt-vlc-libs.svg)](http://badge.fury.io/js/grunt-vlc-libs)
 
 ## Install
 
